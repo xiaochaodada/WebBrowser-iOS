@@ -5,7 +5,7 @@ TARGET := iphone:clang:latest:12.2
 include $(THEOS)/makefiles/common.mk
 
 # 使用 Xcode 项目构建
-XCODEPROJ_NAME = webBrowser
+XCODEPROJ_NAME = WebBrowser-iOS
 
 # 指定 Theos 使用 xcodeproj 规则
 include $(THEOS_MAKE_PATH)/xcodeproj.mk
