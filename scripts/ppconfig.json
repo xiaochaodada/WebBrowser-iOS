@@ -117,14 +117,14 @@
         }
     },
     "ios": {
-        "name": "PakePlus",
-        "showName": "PakePlus",
-        "version": "0.0.1",
+        "name": "WebBrowser",
+        "showName": "WebBrowser",
+        "version": "1.1.0",
         "webUrl": "https://juejin.cn/",
-        "id": "com.oaikes.app",
+        "id": "com.test.app",
         "icon": "./app-icon.png",
-        "desc": "PakePlus Project by 1024xiaoshen",
-        "pubBody": "PakePlus ios build body",
+        "desc": "",
+        "pubBody": "WebBrowser ios build body",
         "isHtml": false,
         "debug": false
     },
