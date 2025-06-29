@@ -2,13 +2,17 @@ const {execSync} = require('child_process')
 const fs = require('fs-extra')
 const path = require('path')
 const ppconfig = require('./ppconfig.json')
+const projectName = "webBrowser";
 
 const updateAppName = async (appName) => {
     // workerflow build app showName
     try {
-        let plistPath = path.join(__dirname, '../webBrowser/Info.plist')
+        let plistPath = path.join(__dirname, `../${projectName}/Info.plist`)
         execSync(
             `plutil -replace CFBundleDisplayName -string "${appName}" "${plistPath}"`
+        )
+        execSync(
+            `plutil -replace CFBundleExecutable -string "${projectName}" "${plistPath}"`
         )
         // execSync(
         //     `plutil -replace CFBundleName -string "${appName}" "${plistPath}"`
@@ -25,7 +29,7 @@ const updateConfig = async (debug, webUrl, webview) => {
         // Assuming ContentView.swift
         const contentViewPath = path.join(
             __dirname,
-            '../webBrowser/ContentView.swift'
+            `../${projectName}/ContentView.swift`
         )
         let content = await fs.readFile(contentViewPath, 'utf8')
         // 判断debug是否为true
@@ -101,7 +105,7 @@ const updateBundleId = async (newBundleId) => {
     // Write back only if changes were made
     const pbxprojPath = path.join(
         __dirname,
-        '../webBrowser.xcodeproj/project.pbxproj'
+        `../${projectName}.xcodeproj/project.pbxproj`
     )
     try {
         console.log(`Updating Bundle ID to ${newBundleId}...`)
