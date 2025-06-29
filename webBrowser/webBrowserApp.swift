@@ -1,14 +1,14 @@
 //
-//  PakePlusApp.swift
-//  PakePlus
+//  webBrowserApp.swift
+//  webBrowser
 //
-//  Created by Song on 2025/3/29.
+//  Created by 超大大 on 2025/6/18.
 //
 
 import SwiftUI
 
 @main
-struct PakePlusApp: App {
+struct webBrowserApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -1,4 +1,4 @@
-const { execSync } = require('child_process')
+const {execSync} = require('child_process')
 const fs = require('fs-extra')
 const path = require('path')
 const ppconfig = require('./ppconfig.json')
@@ -6,54 +6,69 @@ const ppconfig = require('./ppconfig.json')
 const updateAppName = async (appName) => {
     // workerflow build app showName
     try {
-        const plistPath = path.join(__dirname, '../PakePlus/Info.plist')
+        let plistPath = path.join(__dirname, '../webBrowser/Info.plist')
         execSync(
             `plutil -replace CFBundleDisplayName -string "${appName}" "${plistPath}"`
         )
+        // execSync(
+        //     `plutil -replace CFBundleName -string "${appName}" "${plistPath}"`
+        // )
         console.log(`✅ Updated app_name to: ${appName}`)
     } catch (error) {
         console.error('❌ Error updating app name:', error)
     }
 }
 
-const updateWebUrl = async (webUrl) => {
+
+const updateConfig = async (debug, webUrl, webview) => {
     try {
         // Assuming ContentView.swift
         const contentViewPath = path.join(
             __dirname,
-            '../PakePlus/ContentView.swift'
+            '../webBrowser/ContentView.swift'
         )
         let content = await fs.readFile(contentViewPath, 'utf8')
+        // 判断debug是否为true
         content = content.replace(
-            /WebView\(url: URL\(string: ".*?"\)!\)/,
-            `WebView(url: URL(string: "${webUrl}")!)`
+            /static let debug = true/,
+            `static let debug = false`
         )
+        if (debug) {
+            //将 static let debug = false 替换为 static let debug = true
+            content = content.replace(
+                /static let debug = false/,
+                `static let debug = ${debug}`
+            )
+            console.log(`✅ Updated web debug to: ${debug}`)
+        }
+        const {userAgent} = webview
+        content = content.replace(
+            /static let customUserAgent = ".*?"/,
+            `static let customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"`
+        )
+        if (userAgent) {
+            // static let customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+            // ""是自定义的
+            content = content.replace(
+                /static let customUserAgent = ".*?"/,
+                `static let customUserAgent = "${userAgent}"`
+            )
+            console.log(`✅ Updated web userAgent to: ${userAgent}`)
+        }
+
+        //替换 static let openUrl = "https://www.baidu.com"
+        if (webUrl) {
+            content = content.replace(
+                /static let openUrl = ".*?"/,
+                `static let openUrl = "${webUrl}"`
+            )
+            console.log(`✅ Updated web URL to: ${webUrl}`)
+        }
         await fs.writeFile(contentViewPath, content)
-        console.log(`✅ Updated web URL to: ${webUrl}`)
     } catch (error) {
         console.error('❌ Error updating web URL:', error)
     }
 }
-
-const updateWebEnv = async (debug, webview) => {
-    // update debug
-    const webViewPath = path.join(__dirname, '../PakePlus/WebView.swift')
-    let content = await fs.readFile(webViewPath, 'utf8')
-    content = content.replace(/let debug = false/, `let debug = ${debug}`)
-
-    // update userAgent
-    const { userAgent } = webview
-    if (userAgent) {
-        content = content.replace(
-            `// webView.customUserAgent = ""`,
-            `webView.customUserAgent = "${userAgent}"`
-        )
-    }
-
-    await fs.writeFile(webViewPath, content)
-    console.log(`✅ Updated debug to: ${debug}`)
-}
-
 // set github env
 const setGithubEnv = (name, version, pubBody) => {
     console.log('setGithubEnv......')
@@ -86,7 +101,7 @@ const updateBundleId = async (newBundleId) => {
     // Write back only if changes were made
     const pbxprojPath = path.join(
         __dirname,
-        '../PakePlus.xcodeproj/project.pbxproj'
+        '../webBrowser.xcodeproj/project.pbxproj'
     )
     try {
         console.log(`Updating Bundle ID to ${newBundleId}...`)
@@ -103,27 +118,24 @@ const updateBundleId = async (newBundleId) => {
 }
 
 const main = async () => {
-    const { webview } = ppconfig.phone
-    const { name, showName, version, webUrl, id, pubBody, debug } = ppconfig.ios
+        const {webview} = ppconfig.phone
+        const {name, showName, version, webUrl, id, pubBody, debug} = ppconfig.ios
 
-    // Update app name if provided
-    await updateAppName(showName)
+        // Update app name if provided
+        await updateAppName(showName)
 
-    // Update web URL if provided
-    await updateWebUrl(webUrl)
+        // 更新配置信息
+        await updateConfig(debug, webUrl, webview)
 
-    // update debug
-    await updateWebEnv(debug, webview)
+        // update android applicationId
+        await updateBundleId(id)
 
-    // update android applicationId
-    await updateBundleId(id)
+        // set github env
+        setGithubEnv(name, version, pubBody)
 
-    // set github env
-    setGithubEnv(name, version, pubBody)
-
-    // success
-    console.log('✅ Worker Success')
-}
+        // success
+        console.log('✅ Worker Success')
+    }
 
 // run
 ;(async () => {
